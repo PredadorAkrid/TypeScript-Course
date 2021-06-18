@@ -1,26 +1,27 @@
 "use strict";
-class Person {
-    constructor(name) {
-        this.name = name;
+var _a;
+const e1 = {
+    name: "Alexis",
+    startDate: new Date(),
+    privileges: ["create-server"],
+};
+function add(a, b) {
+    if (typeof a === "string" || typeof b === "string") {
+        return a.toString() + b.toString();
     }
-    greet(phrase) {
-        console.log(phrase + this.name);
-    }
+    return a + b;
 }
-class Student {
-    constructor(n) {
-        this.age = 30;
-        if (n) {
-            this.name = n;
-        }
-        else {
-            this.name = "";
-            console.log("hi");
-        }
-    }
-    greet() {
-        console.log("Hola mi nombre es: " + this.name);
-    }
-}
-const student1 = new Student("Alexis");
-student1.greet();
+const result = add(1, 5);
+const fetchedUserData = {
+    id: "url",
+    name: "Alexis",
+    job: {
+        title: "CEO",
+        description: "My own company",
+    },
+};
+console.log(fetchedUserData.job.title);
+console.log(fetchedUserData.job && fetchedUserData.job.title);
+console.log((_a = fetchedUserData === null || fetchedUserData === void 0 ? void 0 : fetchedUserData.job) === null || _a === void 0 ? void 0 : _a.title);
+const userInput = null;
+const storeData = userInput || 'DEFAULT';

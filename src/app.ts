@@ -1,57 +1,137 @@
-// solo las estructuras
-interface Greetable   {
-    name: string;
-    greet(phrase: string): void;
+type Admin = {
+  name: string;
+  privileges: string[];
+};
+
+type Employee = {
+  name: string;
+  startDate: Date;
+};
+
+type ElevatedEmployee = Admin & Employee;
+
+const e1: ElevatedEmployee = {
+  name: "Alexis",
+  startDate: new Date(),
+  privileges: ["create-server"],
+};
+
+type Combinable = string | number;
+type Numeric = number | boolean;
+
+type NumericCombinable = Combinable & Numeric;
+
+function add(a: number, b: number): number;
+function add(a: Combinable, b: Combinable) {
+  if (typeof a === "string" || typeof b === "string") {
+    return a.toString() + b.toString();
+  }
+  return a + b;
 }
 
-class Person implements Greetable{
-    name:string;
+const result = add(1, 5);
+const fetchedUserData = {
+  id: "url",
+  name: "Alexis",
+  job: {
+    title: "CEO",
+    description: "My own company",
+  },
+};
+// Si conocemos y podemos garantizar la existencia de la propiedad simplmente hacemos esto, si no, hacemos lo siguiente:
+console.log(fetchedUserData.job.title);
+//siguiente = esto de abajo, verifica si existe de izquierda a derecha
+console.log(fetchedUserData.job && fetchedUserData.job.title);
+//de la forma de arriba no genera Runtime errors, RE solo no funciona porque no existe job.
 
-    constructor(name:string){
-        this.name = name;
+//La forma de resolverlo es usar el operador ?
+console.log(fetchedUserData?.job?.title);
+
+const userInput = null;
+
+const storeData = userInput || 'DEFAULT';
+
+
+/*
+type UnknownEmployee = Employee | Admin;
+function printEmployeeInformation(emp: UnknownEmployee){
+    if('privileges' in emp){
+        console.log('Privileges: ' + emp.privileges);
     }
-    greet(phrase:string){
-        console.log(phrase + this.name);
+    if('startDate' in emp){
+        console.log('Start date: ' + emp.startDate);
     }
 
-}
+}    
 
+printEmployeeInformation(e1);
 
-
-
-
-
-
-//interfaces con atributos y métodos opcionales de implementar
-interface Named{  
-    name:string; 
-    outPutName?: string;
-}
-
-interface Greetable extends Named{
-    greet(phrase:string): void;
-
-
-}
-
-class Student implements Greetable{
-    readonly name:string;
-    age = 30;
-    constructor(n?:string){
-        if(n){
-            this.name = n;
-        }else{
-            this.name = "";
-            console.log("hi")
-            
-        }
-            
+class Car{
+    drive(){
+        console.log("Driving...");
     }
-    greet(): void{
-        console.log("Hola mi nombre es: " + this.name);
+}
+class Truck{
+    drive(){
+        console.log("Driving truck...");
+    }
+    loadCarg(amount:number){
+        console.log("Loading carg: " + amount);
     }
 }
 
+type Vehicle= Car | Truck;
 
-const student1 = new Student("Alexis")
-student1.greet()
+const v1 = new Car();
+const v2 = new Truck();
+
+function useVehicle(vehicle: Vehicle){
+    vehicle.drive(); //lo comparten en común
+    //esto jala
+    if(vehicle instanceof Truck){ 
+        vehicle.loadCarg(10);
+    }
+}
+
+interface Bird {
+    type: 'bird'
+    flyingSpeed: number, 
+
+}
+
+interface Horse{
+    type: 'horse'
+    runningSpeed: number, 
+}
+
+type Animal = Bird | Horse;
+
+function moveAnimal(animal: Animal){
+    let speed;
+    switch(animal.type){
+        case 'bird':
+            speed = animal.flyingSpeed;
+            break;
+        case 'horse':
+            speed = animal.runningSpeed
+            break;
+    }
+    console.log("Moving at speed: " + speed);
+}
+
+const paragraph = document.getElementById('message-output');
+const userInput =  document.getElementById('user-input')!;
+if(userInput){
+    (userInput as HTMLInputElement).value = "Hola como te va";
+}
+
+interface ErrorContainer {
+    [prop: string]:string;
+}
+
+const errorBag: ErrorContainer = {
+    email: "Not a valid email",
+    username: "Must start with a cappital letter"
+}
+
+*/
