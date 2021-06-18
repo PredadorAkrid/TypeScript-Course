@@ -1,114 +1,164 @@
-/*
-const names: Array<string> = [];
-//promesas en JS
-const promise = new Promise<string>( (resolve, reject) => {
-    setTimeout( () => {
-        resolve('This is done!');
-    }, 2000);
-});
-
-const x = promise.then(data => {
-    return data.split(' ');
-})
-console.log(x)
-*/
-
-
-function merge<T extends object, U extends object>(objA: T, objB: U){
-    return Object.assign(objA, objB);
+function Logger(logString: string) {
+  console.log("Estamos en Logger");
+  return function (constructor: Function) {
+    console.log(logString);
+    console.log(constructor);
+  };
 }
 
-const x = merge({name: 'Alexis', hobbies: ['Sports']}, {age: 30});
-console.log(x.age);
-
-// la llamada a funcion nos generaría por ejemplo { age: 23, name: 'Alexis' }
-
-interface Lenghty{
-    length: number;
-}
-
-
-function countAndPrint<T extends Lenghty>(element: T): [T, string]{
-    let descriptionText = "Got no value";
-    if(element.length === 1){
-        descriptionText = 'Got 1 element';
-    }else if(element.length > 1){
-        descriptionText = 'Got ' + element.length + ' elements';
-    }
-        
-    return [element, descriptionText];
-}
-
-console.log(countAndPrint("Hi there"));
-console.log(countAndPrint(['Sports', 'Alexis']));
-
-function extractAndConvert<T extends object, U extends keyof T>(obj:T, key:U){
-    return 'Value: ' + obj[key];
-}
-console.log(extractAndConvert({name:'Alexis'}, 'name'));
-
-
-class DataStorage<T extends number|string|boolean|object> {
-    private data: T[] = [];
-    
-    addItem(item: T){
-        this.data.push(item);
-    }
-    /*
-    removeItem(item: T){
-        this.data.splice(this.data.indexOf(item),1);
-    }
-
-    */
-
-    removeItem(item: T){
-        if(this.data.indexOf(item) === -1){
-            return;
+function WithTemplate(template: string, hookId: string) {
+    console.log('TEMPLATE FACTORY');
+    return function<T extends { new (...args: any[]): {name: string} }>(
+      originalConstructor: T
+    ) {
+      return class extends originalConstructor {
+        constructor(..._: any[]) {
+          super();
+          console.log('Rendering template');
+          const hookEl = document.getElementById(hookId);
+          if (hookEl) {
+            hookEl.innerHTML = template;
+            hookEl.querySelector('h1')!.textContent = this.name;
+          }
         }
-        this.data.splice(this.data.indexOf(item), 1);
-    }
+      };
+    };
+  }
 
-    getItems(){
-        return [...this.data]
+@Logger("Loggging-string")
+@WithTemplate("<h1>My person object </h1>", "app") //activa el decorador antes de crear la clase, la ejecución de las funciones del decorador ocurren de abajo hacia arriba y la ejecución
+//de arriba a abajo, por eso primero imprime lo del primer decorador y luego lo del segundo, y después al revés al ejecutas la función real del decorador
+class Person {
+  name = "Alexis";
+  constructor() {
+    console.log("Creating new person....");
+  }
+}
+
+
+function Log(target: any, propertyName: string | Symbol) {
+  /*console.log("Property decorator");
+  console.log(propertyName, target);*/
+}
+
+function Log2(target:any, name:string, descriptor:PropertyDescriptor){
+    /*console.log("Accesor decorator");
+    console.log(target)
+    console.log(name)
+    console.log(descriptor)*/
+}
+
+function Log3(target: any, name:string | Symbol, descriptor: PropertyDescriptor): PropertyDescriptor{
+    /*console.log("Method decorator")
+    console.log(target)
+    console.log(name)
+    console.log(descriptor)*/
+    return {};
+    
+}
+
+function Log4(target: any, name: string | Symbol, position: number){
+    /*console.log("Parameter decorator")
+    console.log(target)
+    console.log(name)
+    console.log(position)*/
+}
+class Product {
+  @Log
+  title: string;
+  private _price: number;
+  constructor(t: string, p: number) {
+    this.title = t;
+    this._price = p;
+  }
+
+  @Log2
+  set Price(val: number) {
+    if (val > 0) {
+      this._price = val;
+    }
+    throw new Error("Invalid price- must be positive value");
+  }
+  @Log3
+  getPriceWithTax(@Log4 tax: number) {
+      return this._price * (1+tax);
+  }
+}
+const p3 = new Product("Producto 1", 200);
+const p4 = new Product("Producto 1", 200);
+
+function Autobind(_:any, _2: string, descriptor: PropertyDescriptor){
+    const originalMethod = descriptor.value;
+    const adjDescriptor: PropertyDescriptor = {
+        configurable: true,
+        enumerable: false,
+        get() {
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
+        }
+        
+    }
+    return adjDescriptor;
+
+}
+
+
+class Printer{
+    message = "This works!";
+    @Autobind
+    showMessage(){
+       console.log(this.message); 
     }
 }
-const textStorage = new DataStorage<string>();
-textStorage.addItem("Alexis")
-textStorage.addItem("Es")
-textStorage.addItem("Chido")
-console.log(textStorage.getItems())
+const printer =  new Printer();
+const button = document.querySelector('button')!;
+button.addEventListener('click', printer.showMessage)
+//podemos hacer lo mismo con JS puro y nos ahorramos el decorador de la siguiente forma
+//button.addEventListener('click', printer.showMessage.bind(printer));
 
-const genericTypes = new DataStorage<object>();
 
-//genericTypes.addItem({name:'Alexis'});
-//genericTypes.addItem({name:'Navarrete'});
-//vamos a obtener un bug si hacemos
-//genericTypes.removeItem({name:'Navarrete'}) //aparentemente esto va a borrar el item Navarrete, pero no, por como estaba la implementación comentada
-//de remove item, el indexOf regresa -1 que dice que no encontró la referencia en memoria, con lo cual empieza al final del arreglo y borra un item, por eso
-//es que borra navarrete, entonces si le pasamos esto
-//genericTypes.removeItem({name:'Alexis'}) //seguirá borrando Navarrete por lo mismo dicho anteriormente, esto es dado que estamos pasando un nuevo objeto y no la referencia en memoria al 
-//otro objeto que queremos eliminar, pa solucionarlo hay que usar el nuevo método removeItem junto con lo siguiente:
+interface ValidatorConfig{
+    [property: string]: {
+        [validatableProp: string]: string[] //['required', 'positive']
+    }
+}
+const registeredValidators: ValidatorConfig = {
 
-const itemToRemove = {name:'Alexis'}
-genericTypes.addItem(itemToRemove);
-genericTypes.addItem({name:'Navarrete'});
-genericTypes.removeItem(itemToRemove) //ahora si pasamos la referencia en memoria AL MISMO objeto
-console.log(genericTypes.getItems());
+}
+function Required(target:any, propName: string){
+    registeredValidators[target.constructor.name] = {
+        [propName]: ['required']
+    };
+}
 
-interface CourseGoal{
+function PositiveNumber(){}
+function Validate(obj: object){}
+
+class Course{
+    @Required
     title:string;
-    description: string;
-    completeUntil: Date;
+    @PositiveNumber
+    price: number;
+    
+    constructor(t:string, p:number){
+        this.title = t;
+        this.price = p;
 
+    }
 }
 
-function createCourseGoal(title:string, description:string, date: Date ): CourseGoal {
-    let courseGoal: Partial<CourseGoal> = {};
-    courseGoal.title = title;
-    courseGoal.description = description;
-    courseGoal.completeUntil = date;
-    return courseGoal as CourseGoal; //porque ya podemos garantizar que tiene la escructura completa
-}
+const courseForm = document.querySelector('form')!;
+courseForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const titleElement = document.getElementById('title') as HTMLInputElement;
+    const priceElement = document.getElementById('price') as HTMLInputElement;
+    const title = titleElement.value;
+    const price = +priceElement.value;
+    const createdCourse = new Course(title, price);
+    if (!Validate(createdCourse)){
+        alert("Invalid input, please try again");
+        return;
+    } 
 
-const names: Readonly<string[]> = ['Alexis', 'Navarrete'];
-//names.push('Puebla'); //no podemos hacer push porque es una propiedad de readonly
+    console.log(createdCourse);
+})
