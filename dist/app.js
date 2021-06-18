@@ -1,27 +1,58 @@
 "use strict";
-var _a;
-const e1 = {
-    name: "Alexis",
-    startDate: new Date(),
-    privileges: ["create-server"],
-};
-function add(a, b) {
-    if (typeof a === "string" || typeof b === "string") {
-        return a.toString() + b.toString();
-    }
-    return a + b;
+function merge(objA, objB) {
+    return Object.assign(objA, objB);
 }
-const result = add(1, 5);
-const fetchedUserData = {
-    id: "url",
-    name: "Alexis",
-    job: {
-        title: "CEO",
-        description: "My own company",
-    },
-};
-console.log(fetchedUserData.job.title);
-console.log(fetchedUserData.job && fetchedUserData.job.title);
-console.log((_a = fetchedUserData === null || fetchedUserData === void 0 ? void 0 : fetchedUserData.job) === null || _a === void 0 ? void 0 : _a.title);
-const userInput = null;
-const storeData = userInput || 'DEFAULT';
+const x = merge({ name: 'Alexis', hobbies: ['Sports'] }, { age: 30 });
+console.log(x.age);
+function countAndPrint(element) {
+    let descriptionText = "Got no value";
+    if (element.length === 1) {
+        descriptionText = 'Got 1 element';
+    }
+    else if (element.length > 1) {
+        descriptionText = 'Got ' + element.length + ' elements';
+    }
+    return [element, descriptionText];
+}
+console.log(countAndPrint("Hi there"));
+console.log(countAndPrint(['Sports', 'Alexis']));
+function extractAndConvert(obj, key) {
+    return 'Value: ' + obj[key];
+}
+console.log(extractAndConvert({ name: 'Alexis' }, 'name'));
+class DataStorage {
+    constructor() {
+        this.data = [];
+    }
+    addItem(item) {
+        this.data.push(item);
+    }
+    removeItem(item) {
+        if (this.data.indexOf(item) === -1) {
+            return;
+        }
+        this.data.splice(this.data.indexOf(item), 1);
+    }
+    getItems() {
+        return [...this.data];
+    }
+}
+const textStorage = new DataStorage();
+textStorage.addItem("Alexis");
+textStorage.addItem("Es");
+textStorage.addItem("Chido");
+console.log(textStorage.getItems());
+const genericTypes = new DataStorage();
+const itemToRemove = { name: 'Alexis' };
+genericTypes.addItem(itemToRemove);
+genericTypes.addItem({ name: 'Navarrete' });
+genericTypes.removeItem(itemToRemove);
+console.log(genericTypes.getItems());
+function createCourseGoal(title, description, date) {
+    let courseGoal = {};
+    courseGoal.title = title;
+    courseGoal.description = description;
+    courseGoal.completeUntil = date;
+    return courseGoal;
+}
+const names = ['Alexis', 'Navarrete'];
