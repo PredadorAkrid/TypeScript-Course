@@ -103,11 +103,32 @@ __decorate([
 const printer = new Printer();
 const button = document.querySelector('button');
 button.addEventListener('click', printer.showMessage);
-function Required() {
+const registeredValidators = {};
+function Required(target, propName) {
+    registeredValidators[target.constructor.name] = Object.assign(Object.assign({}, registeredValidators[target.constructor.name]), { [propName]: [...registeredValidators[target.constructor.name][propName], 'required'] });
 }
-function PositiveNumber() {
+function PositiveNumber(target, propName) {
+    registeredValidators[target.constructor.name] = Object.assign(Object.assign({}, registeredValidators[target.constructor.name]), { [propName]: [...registeredValidators[target.constructor.name][propName], 'positive'] });
 }
-function Validate(obj) {
+function validate(obj) {
+    const objValidatorConfig = registeredValidators[obj.constructor.name];
+    if (!objValidatorConfig) {
+        return true;
+    }
+    let isValid = true;
+    for (const prop in objValidatorConfig) {
+        for (const validator of objValidatorConfig[prop]) {
+            switch (validator) {
+                case 'required':
+                    isValid = isValid && !!obj[prop];
+                    break;
+                case 'positive':
+                    isValid = isValid && obj[prop] > 0;
+                    break;
+            }
+        }
+    }
+    return isValid;
 }
 class Course {
     constructor(t, p) {
@@ -115,13 +136,23 @@ class Course {
         this.price = p;
     }
 }
+__decorate([
+    Required
+], Course.prototype, "title", void 0);
+__decorate([
+    PositiveNumber
+], Course.prototype, "price", void 0);
 const courseForm = document.querySelector('form');
 courseForm.addEventListener('submit', event => {
     event.preventDefault();
-    const titleElement = document.getElementById('title');
-    const priceElement = document.getElementById('price');
-    const title = titleElement.value;
-    const price = +priceElement.value;
+    const titleEl = document.getElementById('title');
+    const priceEl = document.getElementById('price');
+    const title = titleEl.value;
+    const price = +priceEl.value;
     const createdCourse = new Course(title, price);
+    if (!validate(createdCourse)) {
+        alert('Invalid input, please try again!');
+        return;
+    }
     console.log(createdCourse);
 });
